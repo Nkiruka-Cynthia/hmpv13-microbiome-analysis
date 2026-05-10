@@ -219,26 +219,30 @@ dominant dark cell per row.
 
 **Key observations**:
 
-- **Feces** is the cleanest result; 205 samples concentrate in cluster 4 with minimal scatter. 
+- **Feces** is one of the cleanest results; 205 samples concentrate in cluster 4 with minimal scatter.
   The gut microbiome is distinct enough that the algorithm isolates it unambiguously.
 
-- **Skin of external ear** is similarly clean; cluster 10 captures 311 samples, the single 
-  largest concentration in the entire matrix.
+- **Tooth** shows the strongest clustering signal overall; 353 samples concentrate in cluster 5,
+  forming the single most well-defined microbial group in the entire matrix.
+
+- **Skin of external ear** is similarly clean; cluster 10 captures 311 samples, indicating a
+  strongly distinct and stable skin-associated microbiome.
 
 - **Vaginal sites** (central vagina, posterior fornix, vaginal introitus) fragment across the
-  same clusters (11, 13, 14, 15) rather than one dominant cluster, but importantly, all three 
-  co-cluster with each other, not with other body sites. The algorithm correctly identifies 
+  same clusters (11–15) rather than one dominant cluster, but importantly, all three
+  co-cluster with each other, not with other body sites. The algorithm correctly identifies
   them as ecologically related.
-  
-- **Oral sites** are the most fragmented; each sub-site distributes across 3–6 clusters, 
-  reflecting genuine microenvironmental heterogeneity across tooth surfaces, hard palate, 
-  and soft tissues.
 
-- **Anterior nares** shares its dominant cluster (10) with skin of external ear; consistent 
+- **Oral sites (excluding tooth)** are the most fragmented; each sub-site distributes across
+  multiple clusters, reflecting genuine microenvironmental heterogeneity across tongue,
+  throat, gingiva, and palate niches.
+
+- **Anterior nares** shares its dominant cluster (10) with skin of external ear; consistent
   with the known overlap between nasal and skin-associated microbial communities.
 
-Overall, the algorithm achieves clean separation for ecologically distinct sites (gut, skin) 
+Overall, the algorithm achieves clean separation for ecologically distinct sites (gut, tooth, skin)
 while honestly reflecting the community complexity of mucosal sites.
+
 
 ---
 
@@ -432,7 +436,7 @@ Analysis Notebook
 The full annotated analysis, including all code, outputs, and commentary is available as a 
 rendered HTML report:
 
-[View Full Analysis Notebook]()
+[View Full Analysis Notebook](https://nkiruka-cynthia.github.io/hmpv13-microbiome-analysis/reports/hmpv13_analysis.html)
 
 ---
 
