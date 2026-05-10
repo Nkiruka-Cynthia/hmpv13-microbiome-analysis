@@ -1,0 +1,226 @@
+"","Var1","Var2","Freq"
+"1","1","UBERON:anterior nares",0
+"2","2","UBERON:anterior nares",0
+"3","3","UBERON:anterior nares",68
+"4","4","UBERON:anterior nares",5
+"5","5","UBERON:anterior nares",0
+"6","6","UBERON:anterior nares",0
+"7","7","UBERON:anterior nares",0
+"8","8","UBERON:anterior nares",8
+"9","9","UBERON:anterior nares",1
+"10","10","UBERON:anterior nares",104
+"11","11","UBERON:anterior nares",0
+"12","12","UBERON:anterior nares",1
+"13","13","UBERON:anterior nares",0
+"14","14","UBERON:anterior nares",0
+"15","15","UBERON:anterior nares",0
+"16","1","UBERON:buccal mucosa",0
+"17","2","UBERON:buccal mucosa",8
+"18","3","UBERON:buccal mucosa",1
+"19","4","UBERON:buccal mucosa",0
+"20","5","UBERON:buccal mucosa",9
+"21","6","UBERON:buccal mucosa",40
+"22","7","UBERON:buccal mucosa",140
+"23","8","UBERON:buccal mucosa",0
+"24","9","UBERON:buccal mucosa",5
+"25","10","UBERON:buccal mucosa",1
+"26","11","UBERON:buccal mucosa",0
+"27","12","UBERON:buccal mucosa",0
+"28","13","UBERON:buccal mucosa",0
+"29","14","UBERON:buccal mucosa",0
+"30","15","UBERON:buccal mucosa",0
+"31","1","UBERON:central vagina",0
+"32","2","UBERON:central vagina",0
+"33","3","UBERON:central vagina",7
+"34","4","UBERON:central vagina",0
+"35","5","UBERON:central vagina",0
+"36","6","UBERON:central vagina",0
+"37","7","UBERON:central vagina",1
+"38","8","UBERON:central vagina",0
+"39","9","UBERON:central vagina",0
+"40","10","UBERON:central vagina",0
+"41","11","UBERON:central vagina",0
+"42","12","UBERON:central vagina",43
+"43","13","UBERON:central vagina",13
+"44","14","UBERON:central vagina",25
+"45","15","UBERON:central vagina",9
+"46","1","UBERON:feces",0
+"47","2","UBERON:feces",0
+"48","3","UBERON:feces",4
+"49","4","UBERON:feces",205
+"50","5","UBERON:feces",0
+"51","6","UBERON:feces",1
+"52","7","UBERON:feces",0
+"53","8","UBERON:feces",0
+"54","9","UBERON:feces",0
+"55","10","UBERON:feces",0
+"56","11","UBERON:feces",0
+"57","12","UBERON:feces",0
+"58","13","UBERON:feces",0
+"59","14","UBERON:feces",0
+"60","15","UBERON:feces",0
+"61","1","UBERON:gingiva",0
+"62","2","UBERON:gingiva",9
+"63","3","UBERON:gingiva",1
+"64","4","UBERON:gingiva",0
+"65","5","UBERON:gingiva",6
+"66","6","UBERON:gingiva",128
+"67","7","UBERON:gingiva",59
+"68","8","UBERON:gingiva",0
+"69","9","UBERON:gingiva",0
+"70","10","UBERON:gingiva",0
+"71","11","UBERON:gingiva",1
+"72","12","UBERON:gingiva",0
+"73","13","UBERON:gingiva",0
+"74","14","UBERON:gingiva",0
+"75","15","UBERON:gingiva",0
+"76","1","UBERON:hard palate",0
+"77","2","UBERON:hard palate",42
+"78","3","UBERON:hard palate",1
+"79","4","UBERON:hard palate",1
+"80","5","UBERON:hard palate",0
+"81","6","UBERON:hard palate",44
+"82","7","UBERON:hard palate",71
+"83","8","UBERON:hard palate",0
+"84","9","UBERON:hard palate",41
+"85","10","UBERON:hard palate",0
+"86","11","UBERON:hard palate",0
+"87","12","UBERON:hard palate",0
+"88","13","UBERON:hard palate",0
+"89","14","UBERON:hard palate",0
+"90","15","UBERON:hard palate",0
+"91","1","UBERON:mouth",0
+"92","2","UBERON:mouth",53
+"93","3","UBERON:mouth",7
+"94","4","UBERON:mouth",0
+"95","5","UBERON:mouth",4
+"96","6","UBERON:mouth",0
+"97","7","UBERON:mouth",9
+"98","8","UBERON:mouth",8
+"99","9","UBERON:mouth",100
+"100","10","UBERON:mouth",0
+"101","11","UBERON:mouth",1
+"102","12","UBERON:mouth",0
+"103","13","UBERON:mouth",0
+"104","14","UBERON:mouth",0
+"105","15","UBERON:mouth",0
+"106","1","UBERON:palatine tonsil",0
+"107","2","UBERON:palatine tonsil",70
+"108","3","UBERON:palatine tonsil",0
+"109","4","UBERON:palatine tonsil",0
+"110","5","UBERON:palatine tonsil",1
+"111","6","UBERON:palatine tonsil",1
+"112","7","UBERON:palatine tonsil",35
+"113","8","UBERON:palatine tonsil",0
+"114","9","UBERON:palatine tonsil",80
+"115","10","UBERON:palatine tonsil",0
+"116","11","UBERON:palatine tonsil",16
+"117","12","UBERON:palatine tonsil",0
+"118","13","UBERON:palatine tonsil",0
+"119","14","UBERON:palatine tonsil",0
+"120","15","UBERON:palatine tonsil",0
+"121","1","UBERON:posterior fornix of vagina",0
+"122","2","UBERON:posterior fornix of vagina",0
+"123","3","UBERON:posterior fornix of vagina",9
+"124","4","UBERON:posterior fornix of vagina",0
+"125","5","UBERON:posterior fornix of vagina",0
+"126","6","UBERON:posterior fornix of vagina",0
+"127","7","UBERON:posterior fornix of vagina",0
+"128","8","UBERON:posterior fornix of vagina",0
+"129","9","UBERON:posterior fornix of vagina",0
+"130","10","UBERON:posterior fornix of vagina",0
+"131","11","UBERON:posterior fornix of vagina",0
+"132","12","UBERON:posterior fornix of vagina",43
+"133","13","UBERON:posterior fornix of vagina",14
+"134","14","UBERON:posterior fornix of vagina",23
+"135","15","UBERON:posterior fornix of vagina",9
+"136","1","UBERON:skin of elbow",0
+"137","2","UBERON:skin of elbow",6
+"138","3","UBERON:skin of elbow",110
+"139","4","UBERON:skin of elbow",38
+"140","5","UBERON:skin of elbow",2
+"141","6","UBERON:skin of elbow",3
+"142","7","UBERON:skin of elbow",3
+"143","8","UBERON:skin of elbow",126
+"144","9","UBERON:skin of elbow",1
+"145","10","UBERON:skin of elbow",65
+"146","11","UBERON:skin of elbow",3
+"147","12","UBERON:skin of elbow",1
+"148","13","UBERON:skin of elbow",0
+"149","14","UBERON:skin of elbow",2
+"150","15","UBERON:skin of elbow",0
+"151","1","UBERON:skin of external ear",40
+"152","2","UBERON:skin of external ear",0
+"153","3","UBERON:skin of external ear",22
+"154","4","UBERON:skin of external ear",15
+"155","5","UBERON:skin of external ear",3
+"156","6","UBERON:skin of external ear",0
+"157","7","UBERON:skin of external ear",1
+"158","8","UBERON:skin of external ear",21
+"159","9","UBERON:skin of external ear",1
+"160","10","UBERON:skin of external ear",311
+"161","11","UBERON:skin of external ear",3
+"162","12","UBERON:skin of external ear",0
+"163","13","UBERON:skin of external ear",0
+"164","14","UBERON:skin of external ear",1
+"165","15","UBERON:skin of external ear",1
+"166","1","UBERON:throat",0
+"167","2","UBERON:throat",84
+"168","3","UBERON:throat",7
+"169","4","UBERON:throat",1
+"170","5","UBERON:throat",1
+"171","6","UBERON:throat",5
+"172","7","UBERON:throat",26
+"173","8","UBERON:throat",2
+"174","9","UBERON:throat",68
+"175","10","UBERON:throat",0
+"176","11","UBERON:throat",1
+"177","12","UBERON:throat",0
+"178","13","UBERON:throat",0
+"179","14","UBERON:throat",0
+"180","15","UBERON:throat",0
+"181","1","UBERON:tongue",0
+"182","2","UBERON:tongue",93
+"183","3","UBERON:tongue",2
+"184","4","UBERON:tongue",0
+"185","5","UBERON:tongue",0
+"186","6","UBERON:tongue",2
+"187","7","UBERON:tongue",1
+"188","8","UBERON:tongue",0
+"189","9","UBERON:tongue",114
+"190","10","UBERON:tongue",1
+"191","11","UBERON:tongue",0
+"192","12","UBERON:tongue",0
+"193","13","UBERON:tongue",0
+"194","14","UBERON:tongue",0
+"195","15","UBERON:tongue",0
+"196","1","UBERON:tooth",0
+"197","2","UBERON:tooth",4
+"198","3","UBERON:tooth",5
+"199","4","UBERON:tooth",1
+"200","5","UBERON:tooth",353
+"201","6","UBERON:tooth",0
+"202","7","UBERON:tooth",10
+"203","8","UBERON:tooth",0
+"204","9","UBERON:tooth",2
+"205","10","UBERON:tooth",1
+"206","11","UBERON:tooth",41
+"207","12","UBERON:tooth",0
+"208","13","UBERON:tooth",0
+"209","14","UBERON:tooth",0
+"210","15","UBERON:tooth",0
+"211","1","UBERON:vaginal introitus",0
+"212","2","UBERON:vaginal introitus",0
+"213","3","UBERON:vaginal introitus",7
+"214","4","UBERON:vaginal introitus",0
+"215","5","UBERON:vaginal introitus",0
+"216","6","UBERON:vaginal introitus",1
+"217","7","UBERON:vaginal introitus",0
+"218","8","UBERON:vaginal introitus",0
+"219","9","UBERON:vaginal introitus",0
+"220","10","UBERON:vaginal introitus",0
+"221","11","UBERON:vaginal introitus",0
+"222","12","UBERON:vaginal introitus",43
+"223","13","UBERON:vaginal introitus",12
+"224","14","UBERON:vaginal introitus",23
+"225","15","UBERON:vaginal introitus",9

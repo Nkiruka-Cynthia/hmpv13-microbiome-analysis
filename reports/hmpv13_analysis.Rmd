@@ -1,0 +1,500 @@
+---
+title: "Unsupervised Learning of Microbial Community Structure by Body Site"
+author: "Nkiruka Cynthia Efenji"
+output: html_document
+---
+
+```{r}
+# ==============================================================================
+# SETUP 
+# ==============================================================================
+
+# Set seed for reproducibility
+set.seed(42)
+```
+
+---
+
+```{r}
+# ==============================================================================
+# LOAD DATA
+# ==============================================================================
+
+library(here)
+library(phyloseq)
+library(ggplot2)
+library(dplyr)
+library(vegan)
+library(reshape2)
+
+# Create directories (relative to project root)
+dir.create(here("results"), showWarnings = FALSE)
+dir.create(here("figures"), showWarnings = FALSE)
+
+cat("Project root:", here(), "\n")
+
+# Load dataset (from WSL path)
+load("//wsl.localhost/Ubuntu/home/nkiruka/microbiome_project/data/HMPv13.rda")
+
+ps <- HMPv13
+ps
+```
+```{r}
+# ==============================================================================
+# DATA EXPLORATION
+# ==============================================================================
+
+# Number of taxa (microbial features)
+ntaxa(ps)
+
+# Number of samples
+nsamples(ps)
+
+# Metadata variables
+sample_variables(ps)
+
+# Taxonomic levels
+rank_names(ps)
+```
+```{r}
+# Identify body site variable
+sample_variables(ps)
+
+table(sample_data(ps)$body_site)
+```
+```{r}
+# ==============================================================================
+# EXTRACT COMPONENTS
+# ==============================================================================
+
+# OTU table (taxa x samples)
+otu <- as.data.frame(otu_table(ps))
+
+# Metadata
+metadata <- as.data.frame(sample_data(ps))
+
+# Ensure orientation is correct (samples should be rows)
+otu <- t(otu)
+```
+
+```{r}
+# ==============================================================================
+# 4. CHECK DIMENSIONS
+# ==============================================================================
+
+cat("OTU table:", dim(otu), "\n")
+cat("Metadata:", dim(metadata), "\n")
+```
+```{r}
+# ==============================================================================
+# MATCH SAMPLE IDs
+# ==============================================================================
+
+common_samples <- intersect(rownames(otu), rownames(metadata))
+
+otu <- otu[common_samples, ]
+metadata <- metadata[common_samples, ]
+
+# ==============================================================================
+# SELECT BODY SITE VARIABLE 
+# ==============================================================================
+
+metadata$Site <- metadata$body_site   # standardized variable
+
+# ==============================================================================
+# FILTER LOW-ABUNDANCE TAXA
+# ==============================================================================
+
+# Remove taxa with very low counts across all samples
+otu_filtered <- otu[, colSums(otu) > 10]
+
+# WHY:
+# - Removes noise
+# - Reduces dimensionality
+# - Improves clustering stability
+
+# ==============================================================================
+# NORMALIZATION (RELATIVE ABUNDANCE)
+# ==============================================================================
+
+otu_rel <- sweep(otu_filtered, 1, rowSums(otu_filtered), FUN = "/")
+
+# WHY:
+# - Samples have different sequencing depth
+# - We care about proportions, not raw counts
+
+# ==============================================================================
+# LOG TRANSFORMATION 
+# ==============================================================================
+
+otu_log <- log1p(otu_rel)
+
+# WHY:
+# - Microbiome data is highly skewed
+# - Log stabilizes variance
+
+# ==============================================================================
+# SAVE OUTPUT
+# ==============================================================================
+
+saveRDS(otu_log, here("results", "otu_processed.rds"))
+saveRDS(metadata, here("results", "metadata.rds"))
+
+cat("✓ Saved to results/\n")
+cat("✓ Data preprocessing complete!\n")
+cat("✓ Processed data saved to results/\n")
+```
+
+
+```{r}
+# ==============================================================================
+# PCoA ANALYSIS
+# ==============================================================================
+
+otu <- readRDS(here("results", "otu_processed.rds"))
+metadata <- readRDS(here("results", "metadata.rds"))
+
+cat("Loaded OTU data:", dim(otu), "\n")
+
+# ==============================================================================
+# DISTANCE MATRIX
+# ==============================================================================
+
+cat("\nComputing Bray-Curtis distance matrix...\n")
+cat("(This may take 1-2 minutes for large datasets)\n")
+
+# Add progress reporting
+bray_dist <- vegdist(otu, method = "bray")
+
+cat("✓ Distance matrix computed!\n")
+
+saveRDS(bray_dist, here("results", "bray_curtis.rds"))
+
+cat("✓ Saved to results/\n")
+
+# ==============================================================================
+# PCoA
+# ==============================================================================
+
+cat("\nPerforming PCoA...\n")
+
+pcoa <- cmdscale(bray_dist, k = 2, eig = TRUE)
+
+pcoa_df <- as.data.frame(pcoa$points)
+
+# Save PCoA coordinates
+write.csv(pcoa_df,
+          here("results", "pcoa_coordinates.csv"),
+          row.names = TRUE)
+
+cat("✓ PCoA coordinates saved to results/pcoa_coordinates.csv\n")
+
+colnames(pcoa_df) <- c("PCo1", "PCo2")
+
+pcoa_df$Site <- metadata$Site
+
+# Calculate variance explained
+eigenvalues <- pcoa$eig
+var_explained <- (eigenvalues / sum(eigenvalues)) * 100
+
+cat("Variance explained:\n")
+cat("  PCo1:", round(var_explained[1], 2), "%\n")
+cat("  PCo2:", round(var_explained[2], 2), "%\n")
+
+# ==============================================================================
+# PLOT
+# ==============================================================================
+
+cat("\nCreating plot...\n")
+
+p <- ggplot(pcoa_df, aes(x = PCo1, y = PCo2, color = Site)) +
+  geom_point(size = 3, alpha = 0.6) +
+  labs(
+    title = "PCoA (Bray-Curtis Distance)",
+    x = paste0("PCo1 (", round(var_explained[1], 2), "% variance)"),
+    y = paste0("PCo2 (", round(var_explained[2], 2), "% variance)"),
+    color = "Body Site"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(size = 14, face = "bold", hjust = 0.5),
+    axis.title = element_text(size = 12),
+    legend.position = "right"
+  )
+
+print(p)
+
+cat("✓ Plot created!\n")
+
+ggsave(here("figures", "pcoa_plot.png"), p, width = 8, height = 6, dpi = 300)
+
+cat("✓ Plot saved to figures/pcoa_plot.png\n")
+```
+
+```{r}
+# ==============================================================================
+# CLUSTERING ANALYSIS 
+# ==============================================================================
+
+library(ggplot2)
+library(here)
+
+cat("\n=== CLUSTERING ANALYSIS ===\n")
+
+# Load data
+metadata <- readRDS(here("results", "metadata.rds"))
+metadata <- as.data.frame(metadata)
+
+bray_dist <- readRDS(here("results", "bray_curtis.rds"))
+pcoa_df <- read.csv(here("results", "pcoa_coordinates.csv"), row.names = 1)
+
+colnames(pcoa_df) <- c("PCo1", "PCo2")
+
+# Align metadata
+metadata_sub <- metadata[match(rownames(pcoa_df), metadata$X.SampleID), ]
+pcoa_df$body_site <- metadata_sub$body_site
+
+if (any(is.na(pcoa_df$body_site))) {
+  stop("❌ Metadata alignment failed!")
+}
+
+cat("✓ Data loaded and aligned\n")
+
+# ==============================================================================
+# HIERARCHICAL CLUSTERING 
+# ==============================================================================
+
+cat("\n--- Hierarchical Clustering ---\n")
+
+hclust_result <- hclust(bray_dist, method = "ward.D2")
+
+k <- length(unique(pcoa_df$body_site))
+hclust_clusters <- cutree(hclust_result, k = k)
+
+pcoa_df$cluster <- as.factor(hclust_clusters)
+
+cat("✓ Clustering complete\n")
+
+# ==============================================================================
+# CONFUSION MATRIX 
+# ==============================================================================
+
+cat("\n--- Confusion Matrix ---\n")
+
+confusion_matrix <- table(pcoa_df$cluster, pcoa_df$body_site)
+
+print(confusion_matrix)
+
+# ==============================================================================
+# CLUSTER PLOT 
+# ==============================================================================
+
+cat("\n--- Plotting clustering results ---\n")
+
+p_cluster_simple <- ggplot(pcoa_df,
+                           aes(x = PCo1, y = PCo2, color = cluster)) +
+  geom_point(size = 3, alpha = 0.7) +
+  labs(
+    title = "Hierarchical Clustering Results on PCoA",
+    subtitle = "Samples colored by cluster assignment",
+    x = "PCo1",
+    y = "PCo2",
+    color = "Cluster"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = 0.5, face = "bold", size = 14),
+    plot.subtitle = element_text(hjust = 0.5, size = 11),
+    axis.title = element_text(size = 12),
+    legend.position = "right",
+    panel.grid.major = element_line(color = "lightgray", size = 0.3)
+  )
+
+print(p_cluster_simple)
+
+ggsave(here("figures", "clustering_clusters_only.png"),
+       p_cluster_simple, width = 8, height = 6, dpi = 300)
+
+cat("✓ Plot saved\n")
+
+# ==============================================================================
+# VISUALIZATIONS 
+# ==============================================================================
+
+cat("\n--- Creating improved clustering visualizations ---\n")
+
+# VISUALIZATION 1: CONFUSION MATRIX HEATMAP
+confusion_df <- as.data.frame(as.table(confusion_matrix))
+colnames(confusion_df) <- c("Cluster", "BodySite", "Count")
+
+p_confusion <- ggplot(confusion_df, aes(x = Cluster, y = BodySite, fill = Count)) +
+  geom_tile(color = "white", size = 0.5) +
+  geom_text(aes(label = Count), color = "black", size = 4, fontface = "bold") +
+  scale_fill_gradient(low = "white", high = "darkblue") +
+  labs(
+    title = "Confusion Matrix: Clustering vs Body Sites",
+    subtitle = "Numbers show how many samples from each body site fell into each cluster",
+    x = "Cluster Assignment",
+    y = "Actual Body Site",
+    fill = "Count"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = 0.5, face = "bold", size = 14),
+    plot.subtitle = element_text(hjust = 0.5, size = 11),
+    axis.title = element_text(size = 12),
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    axis.text.y = element_text(size = 9),
+    panel.grid = element_blank()
+  )
+
+print(p_confusion)
+
+ggsave(here("figures", "confusion_matrix_heatmap.png"),
+       p_confusion, width = 10, height = 8, dpi = 300)
+
+cat("✓ Confusion matrix heatmap saved\n")
+
+# VISUALIZATION 2: CLUSTER SIZE DISTRIBUTION
+
+cluster_sizes <- data.frame(
+  Cluster = names(table(pcoa_df$cluster)),
+  Size = as.numeric(table(pcoa_df$cluster))
+)
+
+# Fix alphabetical ordering issue
+cluster_sizes$Cluster <- factor(cluster_sizes$Cluster, 
+                                levels = as.character(1:15))
+
+p_cluster_size <- ggplot(cluster_sizes, aes(x = Cluster, y = Size, fill = Cluster)) +
+  geom_col(color = "black", size = 0.5) +
+  geom_text(aes(label = Size), vjust = -0.5, fontface = "bold", size = 4) +
+  labs(
+    title = "Cluster Size Distribution",
+    x = "Cluster",
+    y = "Number of Samples",
+    fill = "Cluster"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = 0.5, face = "bold", size = 14),
+    axis.title = element_text(size = 12),
+    legend.position = "none",
+    panel.grid.major.x = element_blank()
+  )
+
+print(p_cluster_size)
+
+ggsave(here("figures", "cluster_size_distribution.png"),
+       p_cluster_size, width = 8, height = 6, dpi = 300)
+
+cat("✓ Cluster size plot saved\n")
+
+
+# VISUALIZATION 3: BODY SITE REPRESENTATION BY CLUSTER
+body_site_by_cluster <- as.data.frame(confusion_matrix)
+colnames(body_site_by_cluster) <- c("Cluster", "BodySite", "Count")
+
+p_composition <- ggplot(body_site_by_cluster, 
+                        aes(x = Cluster, y = Count, fill = BodySite)) +
+  geom_col(color = "black", size = 0.3) +
+  labs(
+    title = "Body Site Composition by Cluster",
+    subtitle = "Shows which body sites are represented in each cluster",
+    x = "Cluster",
+    y = "Number of Samples",
+    fill = "Body Site"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = 0.5, face = "bold", size = 14),
+    plot.subtitle = element_text(hjust = 0.5, size = 11),
+    axis.title = element_text(size = 12),
+    legend.position = "right",
+    legend.text = element_text(size = 9),
+    panel.grid.major.x = element_blank()
+  ) +
+  coord_flip()
+
+print(p_composition)
+
+ggsave(here("figures", "body_site_by_cluster.png"),
+       p_composition, width = 10, height = 6, dpi = 300)
+
+cat("✓ Body site composition plot saved\n")
+
+# VISUALIZATION 4: CLUSTERING QUALITY METRIC
+clustering_quality <- data.frame()
+
+for (site in unique(pcoa_df$body_site)) {
+  site_samples <- pcoa_df[pcoa_df$body_site == site, ]
+  best_cluster <- names(sort(table(site_samples$cluster), decreasing = TRUE))[1]
+  purity <- sum(site_samples$cluster == best_cluster) / nrow(site_samples)
+  
+  clustering_quality <- rbind(clustering_quality, 
+                              data.frame(BodySite = site, 
+                                       Purity = purity * 100,
+                                       BestCluster = best_cluster))
+}
+
+p_quality <- ggplot(clustering_quality, 
+                    aes(x = reorder(BodySite, Purity), y = Purity, fill = Purity)) +
+  geom_col(color = "black", size = 0.5) +
+  geom_text(aes(label = paste0(round(Purity, 1), "%")), 
+            vjust = -0.5, fontface = "bold", size = 3.5) +
+  scale_fill_gradient(low = "#FF6B6B", high = "#4ECDC4") +
+  labs(
+    title = "Clustering Purity by Body Site",
+    subtitle = "Percentage of each body site that clusters together",
+    x = "Body Site",
+    y = "Purity (%)",
+    fill = "Purity"
+  ) +
+  ylim(0, 105) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = 0.5, face = "bold", size = 14),
+    plot.subtitle = element_text(hjust = 0.5, size = 11),
+    axis.title = element_text(size = 12),
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    legend.position = "none",
+    panel.grid.major.x = element_blank()
+  )
+
+print(p_quality)
+
+ggsave(here("figures", "clustering_purity.png"),
+       p_quality, width = 10, height = 6, dpi = 300)
+
+cat("✓ Clustering purity plot saved\n")
+
+# ==============================================================================
+# SAVE RESULTS
+# ==============================================================================
+
+clustering_summary <- data.frame(
+  SampleID = rownames(pcoa_df),
+  body_site = pcoa_df$body_site,
+  cluster = pcoa_df$cluster
+)
+
+write.csv(clustering_summary,
+          here("results", "clustering_summary.csv"),
+          row.names = FALSE)
+
+write.csv(as.data.frame(confusion_matrix),
+          here("results", "confusion_matrix.csv"))
+
+write.csv(clustering_quality,
+          here("results", "clustering_quality_metrics.csv"),
+          row.names = FALSE)
+
+cat("\n✓ All results saved!\n")
+
+# ==============================================================================
+# END
+# ==============================================================================
+```
+
+
+
