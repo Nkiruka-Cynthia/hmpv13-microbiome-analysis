@@ -83,15 +83,12 @@ HMPv13 phyloseq object
   PCoA — cmdscale(k=2)                Hierarchical clustering
   2D projection of community           hclust(ward.D2), k=15
   structure (Plot A)                        │
-                                     ┌──────┴──────────────────────┐
-                                     ▼              ▼              ▼
-                              Confusion       Cluster size    Purity
-                              matrix          distribution    metric
-                              heatmap         (Plot C)        (Plot E)
-                              (Plot B)
-                                     ▼
-                              Body site composition
-                              by cluster (Plot D)
+                                 ┌──────────┼──────────┬──────────┐
+                                 ▼          ▼          ▼          ▼
+                           Confusion   Cluster    Body site   Purity
+                           matrix      size       composition metric
+                           heatmap     distribution by cluster (Plot E)
+                           (Plot B)    (Plot C)   (Plot D)
 ```
 
 ---
