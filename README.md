@@ -3,7 +3,9 @@
 **Author:** Nkiruka Cynthia Efenji  
 **Dataset:** HMPv13; Human Microbiome Project (16S rRNA, V1–V3 region)  
 **Tools:** R · phyloseq · vegan · ggplot2 · here · dplyr · reshape2 · cmdscale · hclust/cutree  
-**Project type:** Exploratory bioinformatics · Unsupervised machine learning  
+**Project type:** Exploratory bioinformatics · Unsupervised machine learning 
+
+![HMPv13 Analysis Summary](figures/figure_panel2.png)
 
 
 ---
@@ -465,7 +467,8 @@ hmpv13_project/
      ├── confusion_matrix_heatmap.png
      ├── cluster_size_distribution.png
      ├── body_site_by_cluster.png
-     └── clustering_purity.png
+     ├── clustering_purity.png
+     └── figure_panel2.png
 ```
 
 
