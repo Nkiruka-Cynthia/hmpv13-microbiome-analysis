@@ -26,6 +26,8 @@ library(ggplot2)
 library(dplyr)
 library(vegan)
 library(reshape2)
+library(cluster)
+library(patchwork)
 
 # Create directories (relative to project root)
 dir.create(here("results"), showWarnings = FALSE)
@@ -33,9 +35,8 @@ dir.create(here("figures"), showWarnings = FALSE)
 
 cat("Project root:", here(), "\n")
 
-# Load dataset (from WSL path)
-load("//wsl.localhost/Ubuntu/home/nkiruka/microbiome_project/data/HMPv13.rda")
-
+# Load dataset
+load(here("data", "HMPv13.rda"))
 ps <- HMPv13
 ps
 ```
@@ -139,12 +140,12 @@ otu_log <- log1p(otu_rel)
 
 saveRDS(otu_log, here("results", "otu_processed.rds"))
 saveRDS(metadata, here("results", "metadata.rds"))
+saveRDS(otu_filtered, here("results", "otu_filtered_raw.rds"))
 
 cat("✓ Saved to results/\n")
 cat("✓ Data preprocessing complete!\n")
 cat("✓ Processed data saved to results/\n")
 ```
-
 
 ```{r}
 # ==============================================================================
@@ -163,7 +164,6 @@ cat("Loaded OTU data:", dim(otu), "\n")
 cat("\nComputing Bray-Curtis distance matrix...\n")
 cat("(This may take 1-2 minutes for large datasets)\n")
 
-# Add progress reporting
 bray_dist <- vegdist(otu, method = "bray")
 
 cat("✓ Distance matrix computed!\n")
@@ -233,13 +233,16 @@ cat("✓ Plot saved to figures/pcoa_plot.png\n")
 
 ```{r}
 # ==============================================================================
-# CLUSTERING ANALYSIS 
+# CLUSTERING ANALYSIS (PAM / K-MEDOIDS on Bray-Curtis)
+# PAM works directly on any dissimilarity matrix, so it is the correct method here.
 # ==============================================================================
 
 library(ggplot2)
 library(here)
+library(cluster)
+library(patchwork)
 
-cat("\n=== CLUSTERING ANALYSIS ===\n")
+cat("\n=== CLUSTERING ANALYSIS (PAM) ===\n")
 
 # Load data
 metadata <- readRDS(here("results", "metadata.rds"))
@@ -261,19 +264,19 @@ if (any(is.na(pcoa_df$body_site))) {
 cat("✓ Data loaded and aligned\n")
 
 # ==============================================================================
-# HIERARCHICAL CLUSTERING 
+# PAM (K-MEDOIDS) CLUSTERING
 # ==============================================================================
 
-cat("\n--- Hierarchical Clustering ---\n")
-
-hclust_result <- hclust(bray_dist, method = "ward.D2")
+cat("\n--- PAM Clustering ---\n")
 
 k <- length(unique(pcoa_df$body_site))
-hclust_clusters <- cutree(hclust_result, k = k)
+pam_result <- pam(bray_dist, k = k, diss = TRUE)
 
-pcoa_df$cluster <- as.factor(hclust_clusters)
+pcoa_df$cluster <- as.factor(pam_result$clustering)
 
 cat("✓ Clustering complete\n")
+cat("\n--- PAM cluster sizes ---\n")
+print(table(pcoa_df$cluster))
 
 # ==============================================================================
 # CONFUSION MATRIX 
@@ -295,7 +298,7 @@ p_cluster_simple <- ggplot(pcoa_df,
                            aes(x = PCo1, y = PCo2, color = cluster)) +
   geom_point(size = 3, alpha = 0.7) +
   labs(
-    title = "Hierarchical Clustering Results on PCoA",
+    title = "Clustering Results on PCoA",
     subtitle = "Samples colored by cluster assignment",
     x = "PCo1",
     y = "PCo2",
@@ -332,7 +335,7 @@ p_confusion <- ggplot(confusion_df, aes(x = Cluster, y = BodySite, fill = Count)
   geom_text(aes(label = Count), color = "black", size = 4, fontface = "bold") +
   scale_fill_gradient(low = "white", high = "darkblue") +
   labs(
-    title = "Confusion Matrix: Clustering vs Body Sites",
+    title = "Confusion Matrix: Clusters vs Body Sites",
     subtitle = "Numbers show how many samples from each body site fell into each cluster",
     x = "Cluster Assignment",
     y = "Actual Body Site",
@@ -362,13 +365,12 @@ cluster_sizes <- data.frame(
   Size = as.numeric(table(pcoa_df$cluster))
 )
 
-# Fix alphabetical ordering issue
 cluster_sizes$Cluster <- factor(cluster_sizes$Cluster, 
                                 levels = as.character(1:15))
 
 p_cluster_size <- ggplot(cluster_sizes, aes(x = Cluster, y = Size, fill = Cluster)) +
   geom_col(color = "black", size = 0.5) +
-  geom_text(aes(label = Size), vjust = -0.5, fontface = "bold", size = 4) +
+  geom_text(aes(label = Size), vjust = -0.5, fontface = "bold", size = 3) +
   labs(
     title = "Cluster Size Distribution",
     x = "Cluster",
@@ -389,7 +391,6 @@ ggsave(here("figures", "cluster_size_distribution.png"),
        p_cluster_size, width = 8, height = 6, dpi = 300)
 
 cat("✓ Cluster size plot saved\n")
-
 
 # VISUALIZATION 3: BODY SITE REPRESENTATION BY CLUSTER
 body_site_by_cluster <- as.data.frame(confusion_matrix)
@@ -441,7 +442,7 @@ p_quality <- ggplot(clustering_quality,
                     aes(x = reorder(BodySite, Purity), y = Purity, fill = Purity)) +
   geom_col(color = "black", size = 0.5) +
   geom_text(aes(label = paste0(round(Purity, 1), "%")), 
-            vjust = -0.5, fontface = "bold", size = 3.5) +
+            vjust = -0.5, fontface = "bold", size = 2.5) +
   scale_fill_gradient(low = "#FF6B6B", high = "#4ECDC4") +
   labs(
     title = "Clustering Purity by Body Site",
@@ -467,6 +468,27 @@ ggsave(here("figures", "clustering_purity.png"),
        p_quality, width = 10, height = 6, dpi = 300)
 
 cat("✓ Clustering purity plot saved\n")
+
+# ==============================================================================
+# COMBINED FIGURE PANEL 
+# ==============================================================================
+
+cat("\n--- Building combined 4-panel figure ---\n")
+
+figure_panel <- (p_cluster_simple + p_quality) / (p_composition + p_cluster_size) +
+  plot_annotation(
+    title = "HMPv13 Unsupervised Learning",
+    tag_levels = "A",
+    theme = theme(plot.title = element_text(hjust = 0.5, face = "bold", size = 16))
+  ) &
+  theme(plot.tag = element_text(face = "bold"))
+
+ggsave(here("figures", "figure_panel.png"),
+       figure_panel, width = 14, height = 10, dpi = 300)
+
+cat("✓ Combined figure panel saved to figures/figure_panel.png\n")
+
+
 
 # ==============================================================================
 # SAVE RESULTS
@@ -495,6 +517,3 @@ cat("\n✓ All results saved!\n")
 # END
 # ==============================================================================
 ```
-
-
-
