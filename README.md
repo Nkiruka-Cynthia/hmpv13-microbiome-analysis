@@ -532,10 +532,10 @@ hmpv13-microbiome-analysis/
 
 - The Human Microbiome Project Consortium. Structure, function and diversity of the healthy 
   human microbiome. Nature 486, 207–214 (2012) https://doi.org/10.1038/nature11234
-- Asnicar, F., Thomas, A.M., Passerini, A. et al. Machine learning for microbiologists. 
+- Asnicar, F., Thomas, A., Passerini, A. et al. Machine learning for microbiologists. 
   Nat Rev Microbiol 22, 191–205 (2024). https://doi.org/10.1038/s41579-023-00984-1
-- Kaufman, L. & Rousseeuw, P.J. Finding Groups in Data: An Introduction to Cluster Analysis. 
-  Wiley (1990).
+- Kaufman, L. & Rousseeuw, P. Finding Groups in Data: An Introduction to Cluster Analysis. 
+  Wiley (1990). https://doi.org/10.1080/02664763.2023.2220087
 - Battaglia, T. (2024). A repository for large-scale microbiome datasets, formatted for 
   phyloseq. https://github.com/twbattaglia/MicrobeDS
 - [UBERON Ontology](https://obophenotype.github.io/uberon/)
