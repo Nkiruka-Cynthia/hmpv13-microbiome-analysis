@@ -191,7 +191,10 @@ cat("✓ PCoA coordinates saved to results/pcoa_coordinates.csv\n")
 
 colnames(pcoa_df) <- c("PCo1", "PCo2")
 
-pcoa_df$Site <- metadata$Site
+# Attach body site by matching sample IDs (safe even if row order differs)
+metadata <- as.data.frame(metadata)
+pcoa_df$Site <- metadata$Site[match(rownames(pcoa_df), metadata$X.SampleID)]
+stopifnot(!any(is.na(pcoa_df$Site)))
 
 # Calculate variance explained
 eigenvalues <- pcoa$eig
@@ -202,7 +205,7 @@ cat("  PCo1:", round(var_explained[1], 2), "%\n")
 cat("  PCo2:", round(var_explained[2], 2), "%\n")
 
 # ==============================================================================
-# PLOT
+# PLOT A: PCoA COLOURED BY BODY SITE
 # ==============================================================================
 
 cat("\nCreating plot...\n")
@@ -229,12 +232,44 @@ cat("✓ Plot created!\n")
 ggsave(here("figures", "pcoa_plot.png"), p, width = 8, height = 6, dpi = 300)
 
 cat("✓ Plot saved to figures/pcoa_plot.png\n")
+
+# ==============================================================================
+# PLOT A (SUPPLEMENT): ONE PANEL PER BODY SITE
+# Overplotting hides samples in the single panel above, so each body site is
+# highlighted in its own panel with all other samples shown in grey.
+# ==============================================================================
+
+cat("\nCreating per-site panels...\n")
+
+p_facets <- ggplot(pcoa_df, aes(x = PCo1, y = PCo2)) +
+  geom_point(data = transform(pcoa_df, Site = NULL),
+             colour = "grey85", size = 1) +
+  geom_point(aes(colour = Site), size = 1.2, show.legend = FALSE) +
+  facet_wrap(~ Site) +
+  labs(
+    title = "PCoA by body site (Bray-Curtis)",
+    x = paste0("PCo1 (", round(var_explained[1], 2), "% variance)"),
+    y = paste0("PCo2 (", round(var_explained[2], 2), "% variance)")
+  ) +
+  theme_minimal() +
+  theme(
+    strip.text = element_text(size = 8, face = "bold"),
+    plot.title = element_text(hjust = 0.5, face = "bold")
+  )
+
+print(p_facets)
+
+ggsave(here("figures", "pcoa_by_site_facets.png"),
+       p_facets, width = 12, height = 9, dpi = 300)
+
+cat("✓ Per-site panels saved to figures/pcoa_by_site_facets.png\n")
 ```
 
 ```{r}
 # ==============================================================================
 # CLUSTERING ANALYSIS (PAM / K-MEDOIDS on Bray-Curtis)
-# PAM works directly on any dissimilarity matrix, so it is the correct method here.
+# PAM works directly on any dissimilarity matrix,
+# so it is a suitable method for non-Euclidean ecological distances.
 # ==============================================================================
 
 library(ggplot2)
@@ -269,6 +304,9 @@ cat("✓ Data loaded and aligned\n")
 
 cat("\n--- PAM Clustering ---\n")
 
+# Make sure the distance matrix and the PCoA table are in the same sample order
+stopifnot(identical(rownames(pcoa_df), attr(bray_dist, "Labels")))
+
 k <- length(unique(pcoa_df$body_site))
 pam_result <- pam(bray_dist, k = k, diss = TRUE)
 
@@ -279,7 +317,7 @@ cat("\n--- PAM cluster sizes ---\n")
 print(table(pcoa_df$cluster))
 
 # ==============================================================================
-# CONFUSION MATRIX 
+# CONFUSION MATRIX
 # ==============================================================================
 
 cat("\n--- Confusion Matrix ---\n")
@@ -289,7 +327,7 @@ confusion_matrix <- table(pcoa_df$cluster, pcoa_df$body_site)
 print(confusion_matrix)
 
 # ==============================================================================
-# CLUSTER PLOT 
+# CLUSTER PLOT
 # ==============================================================================
 
 cat("\n--- Plotting clustering results ---\n")
@@ -468,28 +506,59 @@ ggsave(here("figures", "clustering_purity.png"),
        p_quality, width = 10, height = 6, dpi = 300)
 
 cat("✓ Clustering purity plot saved\n")
+```
 
+```{r}
 # ==============================================================================
-# COMBINED FIGURE PANEL 
+# COMBINED FIGURE PANEL
+# A: PCoA by body site | B: cluster sizes
+# C: body site composition by cluster | D: purity by body site
 # ==============================================================================
 
 cat("\n--- Building combined 4-panel figure ---\n")
 
-figure_panel <- (p_cluster_simple + p_quality) / (p_composition + p_cluster_size) +
+library(patchwork)
+
+# Strip the "UBERON:" prefix so labels fit in the smaller panels
+strip_uberon <- function(x) sub("UBERON:", "", x)
+
+# PCoA plot from the PCoA chunk (still in memory as `p`)
+p_pcoa <- p
+
+pA <- p_pcoa +
+  scale_color_discrete(labels = strip_uberon) +
+  labs(title = "PCoA (Bray-Curtis)", color = "Body site") +
+  theme(legend.text = element_text(size = 8))
+
+pB <- p_cluster_size +
+  labs(title = "Cluster size")
+
+# Legend dropped here: panel A's legend covers it, and both use the same 15
+# body sites in the same order, so the colours match
+pC <- p_composition +
+  labs(title = "Body site composition by cluster", subtitle = NULL) +
+  theme(legend.position = "none")
+
+pD <- p_quality +
+  scale_x_discrete(labels = strip_uberon) +
+  labs(title = "Purity by body site", subtitle = NULL) +
+  theme(axis.text.x = element_text(size = 8, angle = 45, hjust = 1))
+
+figure_panel <- (pA + pB) / (pC + pD) +
   plot_annotation(
-    title = "HMPv13 Unsupervised Learning",
+    title = "HMPv13: body-site structure of the human microbiome (Bray-Curtis; PAM clustering, k = 15)",
     tag_levels = "A",
     theme = theme(plot.title = element_text(hjust = 0.5, face = "bold", size = 16))
   ) &
   theme(plot.tag = element_text(face = "bold"))
 
 ggsave(here("figures", "figure_panel.png"),
-       figure_panel, width = 14, height = 10, dpi = 300)
+       figure_panel, width = 16, height = 11, dpi = 300)
 
 cat("✓ Combined figure panel saved to figures/figure_panel.png\n")
+```
 
-
-
+```{r}
 # ==============================================================================
 # SAVE RESULTS
 # ==============================================================================
@@ -504,8 +573,13 @@ write.csv(clustering_summary,
           here("results", "clustering_summary.csv"),
           row.names = FALSE)
 
-write.csv(as.data.frame(confusion_matrix),
-          here("results", "confusion_matrix.csv"))
+# Confusion matrix in long format with readable column names
+confusion_out <- as.data.frame(confusion_matrix)
+colnames(confusion_out) <- c("Cluster", "BodySite", "Count")
+
+write.csv(confusion_out,
+          here("results", "confusion_matrix.csv"),
+          row.names = FALSE)
 
 write.csv(clustering_quality,
           here("results", "clustering_quality_metrics.csv"),
